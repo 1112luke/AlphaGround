@@ -14,7 +14,7 @@ const Datachart = memo(({ data }) => (
         <LineChart data={data} style={{ fontSize: "10px", margin: "0px" }}>
             <CartesianGrid strokeDasharray="0.5 3" />
             <Line
-                dataKey="thrust"
+                dataKey="value"
                 stroke="var(--yellow)"
                 isAnimationActive={false}
                 dot={{ r: 1 }}

@@ -1,4 +1,9 @@
-export default function Databox({ title, data }) {
+import { useState } from "react";
+import Datachart from "./Datachart";
+
+export default function Databox({ title, data, chartdata = [] }) {
+    const [hovered, sethovered] = useState([]);
+
     return (
         <div
             style={{
@@ -36,10 +41,33 @@ export default function Databox({ title, data }) {
             >
                 {data.map((item, index) => {
                     return (
-                        <li>
+                        <li
+                            onMouseEnter={() => {
+                                sethovered((prev) => {
+                                    var newd = prev;
+                                    newd[index] = 1;
+
+                                    return newd;
+                                });
+                            }}
+                            onMouseLeave={() => {
+                                sethovered((prev) => {
+                                    var newd = prev;
+                                    newd[index] = 0;
+
+                                    return newd;
+                                });
+                            }}
+                            className="lihover"
+                        >
                             <p style={{ margin: "2px" }}>
                                 {index}: {item ? item.toFixed(2) : "--"}
                             </p>
+                            {hovered[index] ? (
+                                <Datachart data={chartdata[index]}></Datachart>
+                            ) : (
+                                <></>
+                            )}
                         </li>
                     );
                 })}

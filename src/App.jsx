@@ -31,8 +31,38 @@ function App() {
     const [cloud2color, setcloud2color] = useState("#FFF");
 
     //chart buffers
+    const tempbuffer = useRef([[], [], [], []]);
+    const [temptdata, settempdata] = useState([[], [], [], []]);
     const thrustbuffer = useRef([]);
     const [thrustdata, setthrustdata] = useState([]);
+    const pressurebuffers = useRef([
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    ]);
+    const [pressuredata, setpressuredata] = useState([
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    ]);
 
     const COMMANDS = {
         S1_ON: 0,
@@ -79,9 +109,30 @@ function App() {
                 }
             }
 
+            //push data to temp buffer
+            for (var i = 0; i < 4; i++) {
+                if (data.temps[i] !== undefined && !isNaN(data.temps[i])) {
+                    tempbuffer.current[i].push({
+                        value: data.temps[i],
+                    });
+                }
+            }
+
             //push data to thrust buffer
             if (data.thrusts && data.thrusts.length > 0) {
-                thrustbuffer.current.push({ thrust: data.thrusts[0] });
+                thrustbuffer.current.push({ value: data.thrusts[0] });
+            }
+
+            //push data to pressure buffers
+            for (var i = 0; i < 12; i++) {
+                if (
+                    data.pressures[i] !== undefined &&
+                    !isNaN(data.pressures[i])
+                ) {
+                    pressurebuffers.current[i].push({
+                        value: data.pressures[i],
+                    });
+                }
             }
 
             latestData.current = data;
@@ -96,8 +147,10 @@ function App() {
             //set ui state
             setalpha({ ...latestData.current });
 
+            //update thrust data
+
             //update chart
-            const currentBuffer = thrustbuffer.current;
+            var currentBuffer = thrustbuffer.current;
 
             // check for new data
             if (currentBuffer.length > 0) {
@@ -108,6 +161,38 @@ function App() {
                     const merged = [...prev, ...currentBuffer];
                     return merged.slice(-100); // keep 50 points
                 });
+            }
+
+            // update temperature
+            for (let i = 0; i < 4; i++) {
+                const tempbuf = tempbuffer.current[i];
+
+                if (tempbuf.length > 0) {
+                    tempbuffer.current[i] = [];
+
+                    settempdata((prev) => {
+                        const updated = [...prev];
+                        updated[i] = [...updated[i], ...tempbuf].slice(-100); // keep last 100
+                        return updated;
+                    });
+                }
+            }
+
+            // update pressure data
+            for (let i = 0; i < 12; i++) {
+                const pressurebuf = pressurebuffers.current[i];
+
+                if (pressurebuf.length > 0) {
+                    pressurebuffers.current[i] = [];
+
+                    setpressuredata((prev) => {
+                        const updated = [...prev];
+                        updated[i] = [...updated[i], ...pressurebuf].slice(
+                            -100
+                        ); // keep last 100
+                        return updated;
+                    });
+                }
             }
 
             //update cloud colors
@@ -187,13 +272,21 @@ function App() {
                     Data:
                 </h2>
                 <div>
-                    <Databox title={"Temps:"} data={alpha.temps}></Databox>
+                    <Databox
+                        title={"Temps:"}
+                        data={alpha.temps}
+                        chartdata={temptdata}
+                    ></Databox>
                     <Databox
                         title={"Pressures:"}
                         data={alpha.pressures}
+                        chartdata={pressuredata}
                     ></Databox>
-                    <Databox title={"Thrusts:"} data={alpha.thrusts}></Databox>
-                    <Datachart data={thrustdata}></Datachart>
+                    <Databox
+                        title={"Thrusts:"}
+                        data={alpha.thrusts}
+                        chartdata={[thrustdata]}
+                    ></Databox>
                 </div>
             </div>
 
