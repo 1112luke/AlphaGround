@@ -88,6 +88,10 @@ h1{
     border-radius: 20px;
 }
 
+.fire:hover{
+    cursor:pointer
+}
+
 .lihover:hover{
     cursor:crosshair;
     color:var(--yellow);

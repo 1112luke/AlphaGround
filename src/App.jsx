@@ -5,6 +5,7 @@ import "./App.css";
 import Plumbing from "./Plumbing";
 import Noidlocker from "./Noidlocker";
 import Datachart from "./Datachart";
+import Firebutton from "./Firebutton";
 
 function App() {
     //UI state
@@ -100,12 +101,18 @@ function App() {
             // convert thrust to volts
             if (data.thrusts) {
                 for (var i = 0; i < data.thrusts.length; i++) {
-                    data.thrusts[i] = Math.abs(
+                    var newt = Math.abs(
                         ((data.thrusts[i] * 5) /
                             (128 * Math.pow(2, 24)) /
                             15e-3) *
                             500
                     );
+
+                    if (newt > 1200) {
+                        newt = 0;
+                    }
+
+                    data.thrusts[i] = newt;
                 }
             }
 
@@ -294,7 +301,6 @@ function App() {
                 <h1 style={{ color: "var(--yellow)", textAlign: "Center" }}>
                     <i>Alpha</i>
                 </h1>
-
                 <h2 style={{ textAlign: "center", color: "var(--yellow)" }}>
                     Monitoring:
                 </h2>
@@ -318,12 +324,6 @@ function App() {
                         style={{ padding: "10px" }}
                     ></Plumbing>
                 </div>
-
-                <h3 style={{ textAlign: "center" }}>
-                    <span style={{ color: cloudcolor }}>●</span>
-                    <span style={{ color: cloud2color }}>●</span>
-                    Scaling color based on P0/P1
-                </h3>
             </div>
             <div className="right">
                 <h1 style={{ color: "var(--yellow)" }}>&nbsp;</h1>
@@ -340,6 +340,7 @@ function App() {
                     lockNoids={lockNoids}
                     unlockNoids={unlockNoids}
                 ></Noidlocker>
+                <Firebutton></Firebutton>
             </div>
         </div>
     );

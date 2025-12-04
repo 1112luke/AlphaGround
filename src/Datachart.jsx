@@ -22,7 +22,7 @@ const Datachart = memo(({ data }) => (
                 activeDot={false}
             />
             <XAxis />
-            <YAxis width={20} />
+            <YAxis width={30} />
         </LineChart>
     </ResponsiveContainer>
 ));
