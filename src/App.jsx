@@ -6,6 +6,8 @@ import Plumbing from "./Plumbing";
 import Noidlocker from "./Noidlocker";
 import Datachart from "./Datachart";
 import Firebutton from "./Firebutton";
+import ThreeScene from "./ThreeScene";
+import { Rocketship } from "./Rocketship";
 
 function App() {
     //UI state
@@ -15,7 +17,10 @@ function App() {
         thrusts: [],
         solenoids: [0, 0, 0, 0],
         acc: [0, 0, 0, 0],
+        keys: [0],
+        burn: [0],
         going: 0,
+        state: 0,
     });
 
     //raw data
@@ -78,9 +83,18 @@ function App() {
         S3_OFF: 5,
         S4_ON: 6,
         S4_OFF: 7,
-        PYRO_ON: 8,
-        PYRO_OFF: 9,
+        FIRE: 8,
+        RST: 9,
     };
+
+    const STATES = [
+        "STANDBY",
+        "FIRE_RECIEVED",
+        "IGNITE",
+        "BURNING",
+        "COOLDOWN",
+        "ABORT",
+    ];
 
     const socket = useRef();
 
@@ -93,6 +107,9 @@ function App() {
         socket.current.onmessage = (event) => {
             // Parse data
             var data = JSON.parse(event.data);
+
+            //console.log(data);
+            //console.log(data.state);
 
             // convert pressure to psi
             if (data.pressures) {
@@ -230,7 +247,7 @@ function App() {
                 }
             }
 
-            //update cloud colors
+            //update plumbing colors
             const p0 = latestData.current.pressures
                 ? latestData.current.pressures[0]
                 : 0;
@@ -280,7 +297,7 @@ function App() {
             console.warn("WebSocket not open");
             return;
         }
-        if (0 <= command && command <= 9 && noidslocked) {
+        if (0 <= command && command <= 7 && noidslocked) {
             alert("UNLOCK SOLENOIDS TO TOGGLE!");
             return;
         }
@@ -341,21 +358,21 @@ function App() {
                     style={{
                         width: "100%",
                         height: "100%",
-                        display: "flex",
                         justifyContent: "center",
+                        flexDirection: "column",
                         alignItems: "baseline",
                     }}
                 >
                     <Plumbing
                         cloudcolor={cloudcolor}
                         cloud2color={cloud2color}
-                        // Pass the state 'alpha' here, it updates at 30fps
                         alpha={alpha}
                         sendCommand={sendCommand}
                         COMMANDS={COMMANDS}
                         className="glow"
-                        style={{ padding: "10px" }}
+                        style={{ padding: "10px", width: "100%" }}
                     ></Plumbing>
+                    <ThreeScene orientation={alpha.acc}></ThreeScene>
                 </div>
             </div>
             <div className="right">
@@ -373,7 +390,31 @@ function App() {
                     lockNoids={lockNoids}
                     unlockNoids={unlockNoids}
                 ></Noidlocker>
-                <Firebutton></Firebutton>
+                <Firebutton
+                    commands={COMMANDS}
+                    sendCommand={sendCommand}
+                ></Firebutton>
+                <h3>State: {STATES[alpha.state]}</h3>
+                {STATES[alpha.state] == "ABORT" ? (
+                    <button
+                        onClick={() => {
+                            sendCommand(COMMANDS.RST);
+                        }}
+                    >
+                        RESET
+                    </button>
+                ) : (
+                    <></>
+                )}
+                <br></br>
+                <br></br>
+                <h3>
+                    Burnwire:{" "}
+                    {alpha.burn[0] ? "🟢 Continuity" : "🔴 Discontinuity"}
+                </h3>
+                <h3>
+                    Key: {alpha.keys[0] ? "🟢 Continuity" : "🔴 Discontinuity"}
+                </h3>
             </div>
         </div>
     );

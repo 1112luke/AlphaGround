@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Firebutton() {
+export default function Firebutton({ commands, sendCommand }) {
     const [firelocked, setfirelocked] = useState(1);
 
     return (
@@ -44,7 +44,26 @@ export default function Firebutton() {
                     Click to UNLOCK
                 </div>
             ) : (
-                <></>
+                <div
+                    style={{
+                        position: "absolute",
+                        opacity: "0%",
+                        top: "0px",
+                        left: "0px",
+                        backgroundColor: "green",
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        fontSize: "20px",
+                    }}
+                    onClick={() => {
+                        sendCommand(commands.FIRE);
+                    }}
+                >
+                    &nbsp;
+                </div>
             )}
             FIRE
         </div>
